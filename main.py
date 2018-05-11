@@ -16,7 +16,7 @@ def main():
 
     # Gateway
     gatewayIP = getGatewayIP()
-    if gatewayIP == None:
+    if gatewayIP is None:
         print('Gateway:      NONE')
     else:
         print('Gateway:      %s' % gatewayIP)
@@ -24,7 +24,6 @@ def main():
 
     # sendHTTPRequest(gatewayIP)
     # return
-
 
     # Teh Internets
     googleDNSPing = ping('8.8.8.8')
@@ -37,15 +36,15 @@ def main():
     # vpnHostPing = ping('138.197.186.179')
     # print('VPN ping:     %s' % vpnHostPing)
 
-
-
     print('\nTrying to find captive portal... [ALPHA]\r')
-    # curl('http://captive.apple.com')
-    # captiveResponse = sendHTTPRequest('captive.apple.com')
-    # if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captiveResponse:
-    #     print('Captive:      No portal')
-    # else:
-    #     print('Captive:\n\t%s' % captiveResponse)
+    """
+    curl('http://captive.apple.com')
+    captiveResponse = sendHTTPRequest('captive.apple.com')
+    if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captiveResponse:  # noqa
+        print('Captive:      No portal')
+    else:
+        print('Captive:\n\t%s' % captiveResponse)
+    """
 
     gatewayRedirect = getRedirectLocation('http://%s/' % gatewayIP)
     if gatewayRedirect:
@@ -55,12 +54,14 @@ def main():
     # captiveIP = resolve('WIFIonICE.de', gatewayIP)
     # curl('http://%s/' % gatewayIP)
 
+
 def getIPv4():
     (stdout, stderr) = _exec("ifconfig en0")
     result = stdout.split("\n")
     inetLine = [line for line in result if "inet " in line][0]
     IPv4 = inetLine.split(" ")[1]
     return IPv4
+
 
 def getGatewayIP():
     (stdout, stderr) = _exec("route -n get default")
@@ -70,6 +71,7 @@ def getGatewayIP():
         return None
     gatewayIP = gatewayLines[0].split(': ')[1]
     return gatewayIP
+
 
 def getRedirectLocation(url):
     cmd = 'curl -s -D - -m 5 "%s"' % url
@@ -86,6 +88,7 @@ def getRedirectLocation(url):
         return None
     redirectLocation = locationLines[0].split(': ')[1]
     return redirectLocation
+
 
 def ping(IP):
     (stdout, stderr) = _exec("ping -q -c2 -t2 %s" % IP)
@@ -108,6 +111,7 @@ def ping(IP):
 #     print('location: %s' % location)
 #     print(r.text)
 
+
 def sendHTTPRequest(host, method='GET', path='/', headers={}, body=None):
 
     try:
@@ -122,9 +126,10 @@ def sendHTTPRequest(host, method='GET', path='/', headers={}, body=None):
     result = data.decode("utf-8")
     return result
 
+
 def resolve(hostname, dnsIP=None):
     digCommand = ''
-    if dnsIP == None:
+    if dnsIP is None:
         digCommand = "dig -t A %s" % hostname
     else:
         digCommand = "dig -t A @%s %s" % (dnsIP, hostname)
@@ -135,8 +140,10 @@ def resolve(hostname, dnsIP=None):
     if len(dnsARecordLines) == 0:
         return None
 
-    # foo = [line[line.find("IN\tA\t")+5:] for line in result if line.find("IN\tA\t") != -1]
-    # foo = [line[index+5:] for (index,line) in ((line.find("IN\tA\t"), line) for line in result)if i != -1]
+    """
+    foo = [line[line.find("IN\tA\t")+5:] for line in result if line.find("IN\tA\t") != -1]  # noqa
+    foo = [line[index+5:] for (index,line) in ((line.find("IN\tA\t"), line) for line in result)if i != -1]  # noqa
+    """
 
     IPv4s = [line[line.find("IN\tA\t")+5:] for line in dnsARecordLines]
     if len(IPv4s) == 0:
@@ -145,19 +152,22 @@ def resolve(hostname, dnsIP=None):
     return IPv4s[0]
 
 
-
 def _exec(command):
     tokens = command.split(' ')
-    process = subprocess.Popen(tokens, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+            tokens, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (stdoutBytes, stderrBytes) = process.communicate()
     stdout = stdoutBytes.decode('utf-8')
     stderr = stderrBytes.decode('utf-8')
     return (stdout, stderr)
 
-# def captivePortalAddress(networkName):
-#     switch(networkName):
-#         case 'WIFIonICE':
-#             captiveAddress = _exec
+
+"""
+def captivePortalAddress(networkName):
+    switch(networkName):
+        case 'WIFIonICE':
+            captiveAddress = _exec
+"""
 
 
 if __name__ == '__main__':
