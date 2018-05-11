@@ -36,9 +36,7 @@ def main():
     # vpnHostPing = ping('138.197.186.179')
     # print('VPN ping:     %s' % vpnHostPing)
 
-    print('')
-    print('Trying to find captive portal... [ALPHA]')
-    print('')
+    print('\nTrying to find captive portal... [ALPHA]\r')
 
     """
     curl('http://captive.apple.com')
