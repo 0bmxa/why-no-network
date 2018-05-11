@@ -37,14 +37,13 @@ def main():
     # print('VPN ping:     %s' % vpnHostPing)
 
     print('\nTrying to find captive portal... [ALPHA]\r')
-
     """
     curl('http://captive.apple.com')
-    captiveResponse = send_http_request('captive.apple.com')
-    if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captiveResponse:  # noqa
+    captive_response = send_http_request('captive.apple.com')
+    if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captive_response:  # noqa
         print('Captive:      No portal')
     else:
-        print('Captive:\n\t%s' % captiveResponse)
+        print('Captive:\n\t%s' % captive_response)
     """
 
     gateway_redirect = get_redirection_location('http://%s/' % gateway_ip)
@@ -114,7 +113,6 @@ def ping(IP):
 
 
 def send_http_request(host, method='GET', path='/', headers={}, body=None):
-
     try:
         connection = http.client.HTTPSConnection(host)
         connection.request(method, path, body, headers)
