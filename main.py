@@ -8,28 +8,28 @@ import http.client
 def main():
 
     # IP / DHCP
-    ip = getIPv4()
+    ip = get_ipv4()
     print('IP:           %s' % ip)
     if ip.startswith('169.'):
         print('No DHCP')
         return
 
     # Gateway
-    gatewayIP = getGatewayIP()
-    if gatewayIP is None:
+    gateway_ip = get_gateway_ip()
+    if gateway_ip is None:
         print('Gateway:      NONE')
     else:
-        print('Gateway:      %s' % gatewayIP)
-        print('Gateway ping: %s' % ping(gatewayIP))
+        print('Gateway:      %s' % gateway_ip)
+        print('Gateway ping: %s' % ping(gateway_ip))
 
-    # sendHTTPRequest(gatewayIP)
+    # send_http_request(gateway_ip)
     # return
 
     # Teh Internets
-    googleDNSPing = ping('8.8.8.8')
-    print('8.8.8.8 ping: %s' % googleDNSPing)
+    google_dns_ping = ping('8.8.8.8')
+    print('8.8.8.8 ping: %s' % google_dns_ping)
 
-    # if googleDNSPing != 'Down':
+    # if google_dns_ping != 'Down':
     #     return
 
     # NOTE: algo5 does not respond to pings
@@ -39,41 +39,41 @@ def main():
     print('\nTrying to find captive portal... [ALPHA]\r')
     """
     curl('http://captive.apple.com')
-    captiveResponse = sendHTTPRequest('captive.apple.com')
-    if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captiveResponse:  # noqa
+    captive_response = send_http_request('captive.apple.com')
+    if '<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>' in captive_response:  # noqa
         print('Captive:      No portal')
     else:
-        print('Captive:\n\t%s' % captiveResponse)
+        print('Captive:\n\t%s' % captive_response)
     """
 
-    gatewayRedirect = getRedirectLocation('http://%s/' % gatewayIP)
-    if gatewayRedirect:
-        print('Gateway redirects to: %s' % gatewayRedirect)
+    gateway_redirect = get_redirection_location('http://%s/' % gateway_ip)
+    if gateway_redirect:
+        print('Gateway redirects to: %s' % gateway_redirect)
 
-    # # captivePortalAddress = captivePortalAddress()
-    # captiveIP = resolve('WIFIonICE.de', gatewayIP)
-    # curl('http://%s/' % gatewayIP)
+    # captivePortalAddress = captivePortalAddress()
+    # captiveIP = resolve('WIFIonICE.de', gateway_ip)
+    # curl('http://%s/' % gateway_ip)
 
 
-def getIPv4():
+def get_ipv4():
     (stdout, stderr) = _exec("ifconfig en0")
     result = stdout.split("\n")
-    inetLine = [line for line in result if "inet " in line][0]
-    IPv4 = inetLine.split(" ")[1]
-    return IPv4
+    inet_line = [line for line in result if "inet " in line][0]
+    ipv4 = inet_line.split(" ")[1]
+    return ipv4
 
 
-def getGatewayIP():
+def get_gateway_ip():
     (stdout, stderr) = _exec("route -n get default")
     result = stdout.split("\n")
-    gatewayLines = [line for line in result if "gateway" in line]
-    if len(gatewayLines) == 0:
+    gateway_lines = [line for line in result if "gateway" in line]
+    if not gateway_lines:
         return None
-    gatewayIP = gatewayLines[0].split(': ')[1]
-    return gatewayIP
+    gateway_ip = gateway_lines[0].split(': ')[1]
+    return gateway_ip
 
 
-def getRedirectLocation(url):
+def get_redirection_location(url):
     cmd = 'curl -s -D - -m 5 "%s"' % url
     print(cmd)
     (stdout, stderr) = _exec('curl -s -D - -m 5 "%s"' % url)
@@ -83,24 +83,24 @@ def getRedirectLocation(url):
     print('---')
     print(stderr)
     print('---')
-    locationLines = [line for line in result if "Location: " in line]
-    if len(locationLines) == 0:
+    location_lines = [line for line in result if "Location: " in line]
+    if not location_lines:
         return None
-    redirectLocation = locationLines[0].split(': ')[1]
-    return redirectLocation
+    redirect_location = location_lines[0].split(': ')[1]
+    return redirect_location
 
 
 def ping(IP):
     (stdout, stderr) = _exec("ping -q -c2 -t2 %s" % IP)
     result = stdout.split("\n")
-    packetLossLine = [line for line in result if "packet loss" in line][0]
-    packetLoss = packetLossLine.split(' ')[6]
+    packet_loss_line = [line for line in result if "packet loss" in line][0]
+    packet_loss = packet_loss_line.split(' ')[6]
 
-    if packetLoss == '0.0%':
+    if packet_loss == '0.0%':
         return 'OK'
-    if packetLoss == '100.0%':
+    if packet_loss == '100.0%':
         return 'Down'
-    return "%s packet loss" % packetLoss
+    return "%s packet loss" % packet_loss
 
 # def curl(url, host=None):
 #     try:
@@ -112,8 +112,7 @@ def ping(IP):
 #     print(r.text)
 
 
-def sendHTTPRequest(host, method='GET', path='/', headers={}, body=None):
-
+def send_http_request(host, method='GET', path='/', headers={}, body=None):
     try:
         connection = http.client.HTTPSConnection(host)
         connection.request(method, path, body, headers)
@@ -127,17 +126,17 @@ def sendHTTPRequest(host, method='GET', path='/', headers={}, body=None):
     return result
 
 
-def resolve(hostname, dnsIP=None):
-    digCommand = ''
-    if dnsIP is None:
-        digCommand = "dig -t A %s" % hostname
+def resolve(hostname, dns_ip=None):
+    dig_command = ''
+    if dns_ip is None:
+        dig_command = "dig -t A %s" % hostname
     else:
-        digCommand = "dig -t A @%s %s" % (dnsIP, hostname)
-    (stdout, stderr) = _exec(digCommand)
+        dig_command = "dig -t A @%s %s" % (dns_ip, hostname)
+    (stdout, stderr) = _exec(dig_command)
 
     result = stdout.split("\n")
-    dnsARecordLines = [line for line in result if "IN\tA\t" in line]
-    if len(dnsARecordLines) == 0:
+    dns_a_record_lines = [line for line in result if "IN\tA\t" in line]
+    if not dns_a_record_lines:
         return None
 
     """
@@ -145,20 +144,20 @@ def resolve(hostname, dnsIP=None):
     foo = [line[index+5:] for (index,line) in ((line.find("IN\tA\t"), line) for line in result)if i != -1]  # noqa
     """
 
-    IPv4s = [line[line.find("IN\tA\t")+5:] for line in dnsARecordLines]
-    if len(IPv4s) == 0:
+    ipv4s = [line[line.find("IN\tA\t")+5:] for line in dns_a_record_lines]
+    if not ipv4s:
         return None
 
-    return IPv4s[0]
+    return ipv4s[0]
 
 
 def _exec(command):
     tokens = command.split(' ')
     process = subprocess.Popen(
             tokens, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    (stdoutBytes, stderrBytes) = process.communicate()
-    stdout = stdoutBytes.decode('utf-8')
-    stderr = stderrBytes.decode('utf-8')
+    (stdout_bytes, stderr_bytes) = process.communicate()
+    stdout = stdout_bytes.decode('utf-8')
+    stderr = stderr_bytes.decode('utf-8')
     return (stdout, stderr)
 
 
